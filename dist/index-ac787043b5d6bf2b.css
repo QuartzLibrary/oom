@@ -1,0 +1,66 @@
+.root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    .navigation {
+        margin: auto;
+
+        .tab-button {
+            margin: 1em;
+        }
+    }
+
+    .histogram {
+        width: 100%;
+
+        margin: 0;
+        padding: 0;
+
+        & .datapoint {
+            overflow-x: visible;
+            padding: 5px 0px 5px 5px;
+            margin: 0;
+
+            & .datapoint-bar {
+                width: 100%;
+                height: 1em;
+                background-color: darkgray;
+
+                transition: transform 10ms linear 0s;
+                transform-origin: left center;
+            }
+        }
+    }
+
+    .raw-data {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        text-align: center;
+
+        .raw-data-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .raw-data-input {
+                width: 100%;
+                max-width: 50em;
+                min-height: 80vh;
+            }
+        }
+
+
+    }
+}
