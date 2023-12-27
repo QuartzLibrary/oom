@@ -38,28 +38,26 @@ fn app() -> impl IntoView {
     let tab = RwSignal::new(Tab::Histogram);
     let data = RwSignal::new(initial_data());
 
-    html::div()
-        .class("root", true)
-        .child(
-            html::div()
-                .class("navigation", true)
-                .child(
-                    html::button()
-                        .class("tab-button", true)
-                        .child("Histogram")
-                        .on(ev::click, move |_| tab.set(Tab::Histogram)),
-                )
-                .child(
-                    html::button()
-                        .class("tab-button", true)
-                        .child("Raw Data")
-                        .on(ev::click, move |_| tab.set(Tab::RawData)),
-                ),
-        )
-        .child(move || match tab.get() {
+    (
+        html::div()
+            .class("navigation", true)
+            .child(
+                html::button()
+                    .class("tab-button", true)
+                    .child("Histogram")
+                    .on(ev::click, move |_| tab.set(Tab::Histogram)),
+            )
+            .child(
+                html::button()
+                    .class("tab-button", true)
+                    .child("Raw Data")
+                    .on(ev::click, move |_| tab.set(Tab::RawData)),
+            ),
+        move || match tab.get() {
             Tab::Histogram => histogram(data.into()).into_view(),
             Tab::RawData => raw_data(data).into_view(),
-        })
+        },
+    )
 }
 
 fn histogram(data: Signal<Data>) -> impl IntoView {
