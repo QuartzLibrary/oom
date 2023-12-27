@@ -210,7 +210,7 @@ fn human_readable(number: f64, unit: &str) -> String {
     };
 
     let scaled_number = format!("{scaled_number:.3}");
-    let scaled_number = scaled_number.trim_end_matches('0');
+    let scaled_number = scaled_number.trim_end_matches('0').trim_end_matches('.');
 
     format!("{scaled_number} {prefix}{unit}")
 }
