@@ -20,6 +20,15 @@ struct Data {
 struct Datapoint {
     name: String,
     size: f64,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    standard_uncertainty: Option<f64>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    comment: Option<String>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    refs: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,7 +82,7 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
         html::div().class("histogram", true).child(
             data.datapoints
                 .into_iter()
-                .map(|Datapoint { name, size }| {
+                .map(|Datapoint { name, size, .. }| {
                     let human_readable_size = human_readable(size, &data.unit);
                     html::div()
                         .class("datapoint", true)
@@ -91,11 +100,9 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
 }
 
 fn raw_data(data: RwSignal<Data>) -> impl IntoView {
-    let raw =
-        RwSignal::new(data.with_untracked(|data| serde_json::to_string_pretty(data).unwrap()));
+    let raw = RwSignal::new(data.with_untracked(|data| data.to_json()));
 
-    let parsed =
-        create_memo(move |_| raw.with(|raw| serde_json::from_str::<Data>(raw).map_err(drop)));
+    let parsed = create_memo(move |_| raw.with(|raw| Data::from_json(raw)));
 
     let first = RefCell::new(true);
     create_render_effect(move |_| {
@@ -223,42 +230,16 @@ fn clamp<T: Clone>(v: T, range: RangeInclusive<T>, mut f: impl FnMut(&T, &T) -> 
     )
 }
 
-fn initial_data() -> Data {
-    Data {
-        unit: "m".to_owned(),
-        datapoints: vec![
-            Datapoint {
-                name: "Neptune".to_owned(),
-                size: 4498396441000.,
-            },
-            Datapoint {
-                name: "Uranus".to_owned(),
-                size: 2870658186000.,
-            },
-            Datapoint {
-                name: "Saturn".to_owned(),
-                size: 1426666422000.,
-            },
-            Datapoint {
-                name: "Jupiter".to_owned(),
-                size: 778340821000.,
-            },
-            Datapoint {
-                name: "Mars".to_owned(),
-                size: 227943824000.,
-            },
-            Datapoint {
-                name: "Earth".to_owned(),
-                size: 149598262000.,
-            },
-            Datapoint {
-                name: "Venus".to_owned(),
-                size: 108209475000.,
-            },
-            Datapoint {
-                name: "Mercury".to_owned(),
-                size: 57909227000.,
-            },
-        ],
+impl Data {
+    fn to_json(&self) -> String {
+        serde_json::to_string_pretty(self).unwrap()
     }
+    fn from_json(raw: &str) -> Result<Self, ()> {
+        serde_json::from_str::<Data>(raw).map_err(drop)
+    }
+}
+
+fn initial_data() -> Data {
+    const INTIAL_DATA: &str = include_str!("./lengths.json");
+    Data::from_json(INTIAL_DATA).unwrap()
 }

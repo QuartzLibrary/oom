@@ -1,0 +1,143 @@
+{
+    "unit": "m",
+    "datapoints": [
+        {
+            "name": "Neptune",
+            "size": 4498396441000.0
+        },
+        {
+            "name": "Uranus",
+            "size": 2870658186000.0
+        },
+        {
+            "name": "Saturn",
+            "size": 1426666422000.0
+        },
+        {
+            "name": "Jupiter",
+            "size": 778340821000.0
+        },
+        {
+            "name": "Mars",
+            "size": 227943824000.0
+        },
+        {
+            "name": "Earth",
+            "size": 149598262000.0
+        },
+        {
+            "name": "Venus",
+            "size": 108209475000.0
+        },
+        {
+            "name": "Mercury",
+            "size": 57909227000.0
+        },
+        {
+            "name": "Human red blood cell (diameter)",
+            "size": 7.2e-6,
+            "comment": "A typical human red blood cell has a disk diameter of approximately 6.2–8.2 µm and a thickness at the thickest point of 2–2.5 µm and a minimum thickness in the centre of 0.8–1 µm, being much smaller than most other human cells.",
+            "refs": [
+                "https://en.wikipedia.org/wiki/Red_blood_cell"
+            ]
+        },
+        {
+            "name": "E.Coli (length)",
+            "size": 2e-6,
+            "refs": [
+                "https://en.wikipedia.org/wiki/Escherichia_coli"
+            ]
+        },
+        {
+            "name": "Mimivirus capsid",
+            "size": 400e-9,
+            "refs": [
+                "https://en.wikipedia.org/wiki/Mimivirus"
+            ]
+        },
+        {
+            "name": "Influenza virus (spherical)",
+            "size": 120e-9,
+            "comment": "Filamentous virions are about 250 nanometers (nm) by 80 nm, bacilliform 120–250 by 95 nm, and spherical 120 nm in diameter.",
+            "refs": [
+                "https://en.wikipedia.org/wiki/Influenza"
+            ]
+        },
+        {
+            "name": "Hemoglobin (Oxy T State Haemoglobin - Oxygen bound at all four haems)",
+            "size": 6.5e-9,
+            "comment": "Eyeballed from longest atom-to-atom distance in 3D model",
+            "refs": [
+                "https://www.rcsb.org/3d-view/jsmol/1gzx"
+            ]
+        },
+        {
+            "name": "Sugar molecule",
+            "size": 1e-9,
+            "comment": "Eyeballed from longest atom-to-atom distance in 3D model",
+            "refs": [
+                "https://en.wikipedia.org/wiki/Sucrose",
+                "https://chemapps.stolaf.edu/jmol/jmol.php?model=O1%5BC%40H%5D%28CO%29%5BC%40%40H%5D%28O%29%5BC%40H%5D%28O%29%5BC%40%40H%5D%28O%29%5BC%40H%5D1O%5BC%40%40%5D2%28O%5BC%40%40H%5D%28%5BC%40%40H%5D%28O%29%5BC%40%40H%5D2O%29CO%29CO"
+            ]
+        },
+        {
+            "name": "C-O bond length",
+            "size": 179e-12,
+            "comment": "143–215fm",
+            "refs": [
+                "https://en.wikipedia.org/wiki/Bond_length",
+                "Handbook of Chemistry & Physics (65th ed.). CRC Press. 1984-06-27. ISBN 0-8493-0465-2."
+            ]
+        },
+        {
+            "name": "C-C bond length",
+            "size": 137e-12,
+            "comment": "120–154fm",
+            "refs": [
+                "https://en.wikipedia.org/wiki/Bond_length",
+                "Handbook of Chemistry & Physics (65th ed.). CRC Press. 1984-06-27. ISBN 0-8493-0465-2."
+            ]
+        },
+        {
+            "name": "C-H bond length",
+            "size": 109e-12,
+            "comment": "106-112fm",
+            "refs": [
+                "https://en.wikipedia.org/wiki/Bond_length",
+                "Handbook of Chemistry & Physics (65th ed.). CRC Press. 1984-06-27. ISBN 0-8493-0465-2."
+            ]
+        },
+        {
+            "name": "Classical radius of the Elecron",
+            "size": 2.8179403262e-15,
+            "standard_uncertainty": 0.0000000013e-15,
+            "refs": [
+                "https://physics.nist.gov/cgi-bin/cuu/Value?re"
+            ]
+        },
+        {
+            "name": "Charge Radius of the Proton",
+            "comment": "2018 CODATA reccomended values",
+            "size": 0.8414e-15,
+            "standard_uncertainty": 0.0019e-15,
+            "refs": [
+                "https://en.wikipedia.org/wiki/Proton",
+                "https://physics.nist.gov/cgi-bin/cuu/Value?rp"
+            ]
+        },
+        {
+            "name": "Radius of the Elecron (upper bound)",
+            "size": 10e-18,
+            "refs": [
+                "https://en.wikipedia.org/wiki/Electron#Fundamental_properties"
+            ]
+        },
+        {
+            "name": "Radius of the Elecron (suggested upper bound)",
+            "size": 10e-22,
+            "refs": [
+                "https://en.wikipedia.org/wiki/Electron#Fundamental_properties"
+            ]
+        }
+    ]
+}
