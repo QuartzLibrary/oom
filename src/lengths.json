@@ -127,14 +127,14 @@
         },
         {
             "name": "Radius of the Elecron (upper bound)",
-            "size": 10e-18,
+            "size": 1e-18,
             "refs": [
                 "https://en.wikipedia.org/wiki/Electron#Fundamental_properties"
             ]
         },
         {
             "name": "Radius of the Elecron (suggested upper bound)",
-            "size": 10e-22,
+            "size": 1e-22,
             "refs": [
                 "https://en.wikipedia.org/wiki/Electron#Fundamental_properties"
             ]
