@@ -4,12 +4,10 @@ use leptos::{
     RwSignal, Signal, SignalGet, SignalSet, SignalWith,
 };
 use serde::{Deserialize, Serialize};
-use std::{
-    cell::RefCell,
-    cmp::{self, Ordering},
-    ops::RangeInclusive,
-};
+use std::cell::RefCell;
 use web_sys::wasm_bindgen::JsCast;
+
+mod human;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct Data {
@@ -70,6 +68,13 @@ fn app() -> impl IntoView {
 }
 
 fn histogram(data: Signal<Data>) -> impl IntoView {
+    let data = create_memo(move |_| {
+        let mut data = data.get();
+        data.datapoints.extend(human::prefix_datapoints());
+        data.sort();
+        data
+    });
+
     let handle = window_event_listener(ev::scroll, move |_| data.with(adjust_size));
     on_cleanup(move || handle.remove());
 
@@ -83,11 +88,12 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
             data.datapoints
                 .into_iter()
                 .map(|Datapoint { name, size, .. }| {
-                    let human_readable_size = human_readable(size, &data.unit);
+                    let scaled_unit = human::round_with_scaled_unit(size, &data.unit);
+                    let scaled_power = human::round_with_power(size, &data.unit);
                     html::div()
                         .class("datapoint", true)
                         .attr("size", size.to_string())
-                        .child(format!("{name} {human_readable_size}"))
+                        .child(format!("{name} — {scaled_unit} ({scaled_power})"))
                         .child(html::div().class("datapoint-bar", true).style(
                             "transform",
                             format!("scaleX(calc(min({size}/var(--size), 1)))"),
@@ -114,8 +120,7 @@ fn raw_data(data: RwSignal<Data>) -> impl IntoView {
         }
 
         if let Ok(mut new) = parsed.get() {
-            new.datapoints
-                .sort_by(|a, b| f64::total_cmp(&a.size, &b.size).reverse());
+            new.sort();
             data.set(new);
         }
     });
@@ -171,71 +176,16 @@ fn set_css_variable(name: &str, value: &str) {
     element.style().set_property(name, value).unwrap();
 }
 
-fn human_readable(number: f64, unit: &str) -> String {
-    // 			Prefix 			Base 10 	Decimal 							Adoption
-    // Name 		Symbol
-    // quetta 		Q 			10^+30 		1000000000000000000000000000000 	2022
-    // ronna 		R 			10^+27 		1000000000000000000000000000 		2022
-    // yotta 		Y 			10^+24 		1000000000000000000000000 			1991
-    // zetta 		Z 			10^+21 		1000000000000000000000 				1991
-    // exa 			E 			10^+18 		1000000000000000000 				1975
-    // peta 		P 			10^+15 		1000000000000000 					1975
-    // tera 		T 			10^+12 		1000000000000 						1960
-    // giga 		G 			10^+9 		1000000000 							1960
-    // mega 		M 			10^+6 		1000000 							1873
-    // kilo 		k 			10^+3 		1000 								1795
-    // — 			— 			10^+0 		1 									—
-    // milli 		m 			10^−3 		0.001 								1795
-    // micro 		μ 			10^−6 		0.000001 							1873
-    // nano 		n 			10^−9 		0.000000001 						1960
-    // pico 		p 			10^−12 		0.000000000001 						1960
-    // femto 		f 			10^−15 		0.000000000000001 					1964
-    // atto 		a 			10^−18 		0.000000000000000001 				1964
-    // zepto 		z 			10^−21 		0.000000000000000000001 			1991
-    // yocto 		y 			10^−24 		0.000000000000000000000001 			1991
-    // ronto 		r 			10^−27 		0.000000000000000000000000001 		2022
-    // quecto 		q 			10^−30 		0.000000000000000000000000000001 	2022
-
-    const LARGE_PREFIXES: [&str; 11] = ["", "k", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"];
-    const SMALL_PREFIXES: [&str; 11] = ["", "m", "μ", "n", "p", "f", "a", "z", "y", "r", "q"];
-    assert_eq!(LARGE_PREFIXES.len(), SMALL_PREFIXES.len());
-
-    let max_prefix: f64 = (LARGE_PREFIXES.len() - 1) as f64;
-
-    let order_of_magnitude = number.abs().log10().floor();
-    let bounded_index = clamp(
-        (order_of_magnitude / 3.).floor(),
-        (-max_prefix)..=max_prefix,
-        f64::total_cmp,
-    ) as isize;
-    let scaled_number = number / f64::powi(10., bounded_index as i32 * 3);
-
-    let prefix = match Ord::cmp(&bounded_index, &0) {
-        Ordering::Less => SMALL_PREFIXES[bounded_index.unsigned_abs()],
-        Ordering::Equal => "",
-        Ordering::Greater => LARGE_PREFIXES[bounded_index as usize],
-    };
-
-    let scaled_number = format!("{scaled_number:.3}");
-    let scaled_number = scaled_number.trim_end_matches('0').trim_end_matches('.');
-
-    format!("{scaled_number} {prefix}{unit}")
-}
-
-fn clamp<T: Clone>(v: T, range: RangeInclusive<T>, mut f: impl FnMut(&T, &T) -> Ordering) -> T {
-    cmp::min_by(
-        cmp::max_by(v, range.start().clone(), &mut f),
-        range.end().clone(),
-        f,
-    )
-}
-
 impl Data {
     fn to_json(&self) -> String {
         serde_json::to_string_pretty(self).unwrap()
     }
     fn from_json(raw: &str) -> Result<Self, ()> {
         serde_json::from_str::<Data>(raw).map_err(drop)
+    }
+    fn sort(&mut self) {
+        self.datapoints
+            .sort_by(|a, b| f64::total_cmp(&a.size, &b.size).reverse());
     }
 }
 
