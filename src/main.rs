@@ -158,17 +158,54 @@ fn adjust_size(Data { datapoints, .. }: &Data) {
         let height = rect.height();
         let top = rect.top();
 
-        if -height < top && top < 0. {
+        if i == 0 && top > 0. {
+            set_css_variable("--size", &datapoints[0].size.to_string());
+        } else if -height < top && top < 0. {
             let visible_fraction = (height + top) / height;
             let size = datapoints[i].size;
             let size_next = datapoints.get(i + 1).map(|d| d.size).unwrap_or(0.);
-            let global = size_next + (size - size_next) * visible_fraction;
+            let global = scale_1(visible_fraction, size, size_next);
             set_css_variable("--size", &global.to_string());
             return;
-        } else if i == 0 && top > 0. {
-            set_css_variable("--size", &datapoints[0].size.to_string());
         }
     }
+}
+
+/// Scales the size linearly such that:
+/// - At the beginning of the current bounding box it returns `size`.
+/// - At the end of the current bounding box it returns `size_next`.
+/// - Midway through the current bounding box it returns `(size + size_next)/2`.
+///
+/// This means that the returned value changes linearly in `visible_fraction`,
+/// and the next histogram bar will appear to grow more slowly at the beginning.
+/// This is because the linear descreases in the scaled size will be a larger
+/// proportion of it as we continue.
+///
+/// This scale gives more of a feeling for what big jumps are actually like.
+fn scale_1(visible_fraction: f64, size: f64, size_next: f64) -> f64 {
+    interpolate(size, size_next, visible_fraction) // size -> size_next
+}
+/// Scales the the size such that:
+/// - At the beginning of the current bounding box it returns `size`.
+/// - At the end of the current bounding box it returns `size_next`.
+/// - Midway through the current bounding box it returns the size needed for the
+///   next bar to be midway between where it was at the beginning of the current
+///   bounding box and full width (which is also where it will be at the end).
+///
+/// This means that the next histogram bar will be growing linearly.
+///
+/// This scale 'feels' better, UI wise, but big jumps will be 'harder to see'.
+#[allow(dead_code)]
+fn scale_2(visible_fraction: f64, size: f64, size_next: f64) -> f64 {
+    // Initial fractional size of the next one when at the top of current bounding box.
+    let ratio = size_next / size;
+
+    let scaling_factor = interpolate(ratio, 1., visible_fraction); // ratio -> 1.
+
+    size_next / scaling_factor
+}
+fn interpolate(from: f64, to: f64, progress: f64) -> f64 {
+    to + (from - to) * progress
 }
 
 fn set_css_variable(name: &str, value: &str) {
