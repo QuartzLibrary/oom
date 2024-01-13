@@ -5,6 +5,7 @@ use leptos::{
 };
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+use std::rc::Rc;
 use web_sys::wasm_bindgen::JsCast;
 
 mod human;
@@ -75,8 +76,20 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
         data
     });
 
-    let handle = window_event_listener(ev::scroll, move |_| data.with(adjust_size));
-    on_cleanup(move || handle.remove());
+    {
+        let frame = Rc::new(RefCell::new(None));
+        let handle = window_event_listener(ev::scroll, move |_| {
+            let inner = frame.clone();
+            let new = frame.take().unwrap_or_else(move || {
+                gloo_render::request_animation_frame(move |_| {
+                    data.with(adjust_size);
+                    drop(inner.take());
+                })
+            });
+            frame.replace(Some(new));
+        });
+        on_cleanup(move || handle.remove());
+    }
 
     let data = data.get();
 
