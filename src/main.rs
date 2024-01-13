@@ -105,7 +105,6 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
                     let scaled_power = human::round_with_power(size, &data.unit);
                     html::div()
                         .class("datapoint", true)
-                        .attr("size", size.to_string())
                         .child(format!("{name} — {scaled_unit} ({scaled_power})"))
                         .child(html::div().class("datapoint-bar", true).style(
                             "transform",
@@ -158,7 +157,7 @@ fn raw_data(data: RwSignal<Data>) -> impl IntoView {
 }
 
 fn adjust_size(Data { datapoints, .. }: &Data) {
-    let elements = document().query_selector_all("[size]").unwrap();
+    let elements = document().query_selector_all(".datapoint").unwrap();
 
     for i in 0.. {
         let Some(element) = elements.item(i) else {
