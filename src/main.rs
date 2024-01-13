@@ -5,6 +5,7 @@ use leptos::{
 };
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+use std::rc::Rc;
 use web_sys::wasm_bindgen::JsCast;
 
 mod human;
@@ -75,8 +76,20 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
         data
     });
 
-    let handle = window_event_listener(ev::scroll, move |_| data.with(adjust_size));
-    on_cleanup(move || handle.remove());
+    {
+        let frame = Rc::new(RefCell::new(None));
+        let handle = window_event_listener(ev::scroll, move |_| {
+            let inner = frame.clone();
+            let new = frame.take().unwrap_or_else(move || {
+                gloo_render::request_animation_frame(move |_| {
+                    data.with(adjust_size);
+                    drop(inner.take());
+                })
+            });
+            frame.replace(Some(new));
+        });
+        on_cleanup(move || handle.remove());
+    }
 
     let data = data.get();
 
@@ -92,7 +105,6 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
                     let scaled_power = human::round_with_power(size, &data.unit);
                     html::div()
                         .class("datapoint", true)
-                        .attr("size", size.to_string())
                         .child(format!("{name} — {scaled_unit} ({scaled_power})"))
                         .child(html::div().class("datapoint-bar", true).style(
                             "transform",
@@ -145,7 +157,7 @@ fn raw_data(data: RwSignal<Data>) -> impl IntoView {
 }
 
 fn adjust_size(Data { datapoints, .. }: &Data) {
-    let elements = document().query_selector_all("[size]").unwrap();
+    let elements = document().query_selector_all(".datapoint").unwrap();
 
     for i in 0.. {
         let Some(element) = elements.item(i) else {
