@@ -1,3 +1,4 @@
+use leptos::html::ToHtmlElement;
 use leptos::{create_memo, create_render_effect, SignalWithUntracked};
 use leptos::{
     document, ev, html, mount_to_body, on_cleanup, window_event_listener, CollectView, IntoView,
@@ -5,11 +6,13 @@ use leptos::{
 };
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+use std::ops::Deref;
 use std::rc::Rc;
+use visibility::{ViewportSize, Visibility};
 use web_sys::wasm_bindgen::JsCast;
-use web_sys::Node;
+use web_sys::{HtmlDivElement, Node};
 
-mod human;
+pub mod human;
 pub mod visibility;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -18,7 +21,7 @@ struct Data {
     datapoints: Vec<Datapoint>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-struct Datapoint {
+pub struct Datapoint {
     name: String,
     size: f64,
     #[serde(default)]
@@ -78,13 +81,37 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
         data
     });
 
+    let elements: Signal<Vec<(HtmlDivElement, HtmlDivElement)>> = create_memo(move |_| {
+        let data = data.get();
+        data.datapoints
+            .into_iter()
+            .map(|Datapoint { name, size, .. }| {
+                let scaled_unit = human::round_with_scaled_unit(size, &data.unit);
+                let scaled_power = human::round_with_power(size, &data.unit);
+
+                let bar = html::div().class("datapoint-bar", true);
+                let datapoint = html::div()
+                    .class("datapoint", true)
+                    .child(format!("{name} — {scaled_unit} ({scaled_power})"))
+                    .child(bar.clone());
+
+                (datapoint.deref().clone(), bar.deref().clone())
+            })
+            .collect()
+    })
+    .into();
+
     {
         let frame = Rc::new(RefCell::new(None));
         let handle = window_event_listener(ev::scroll, move |_| {
             let inner = frame.clone();
             let new = frame.take().unwrap_or_else(move || {
                 gloo_render::request_animation_frame(move |_| {
-                    data.with(adjust_size);
+                    data.with(move |data| {
+                        elements.with(|elements| {
+                            adjust_size(data, elements);
+                        });
+                    });
                     drop(inner.take());
                 })
             });
@@ -93,28 +120,23 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
         on_cleanup(move || handle.remove());
     }
 
-    let data = data.get();
-
-    set_css_variable("--size", &data.datapoints[0].size.to_string());
-    adjust_size(&data);
-
     [
-        html::div().class("histogram", true).child(
-            data.datapoints
-                .into_iter()
-                .map(|Datapoint { name, size, .. }| {
-                    let scaled_unit = human::round_with_scaled_unit(size, &data.unit);
-                    let scaled_power = human::round_with_power(size, &data.unit);
-                    html::div()
-                        .class("datapoint", true)
-                        .child(format!("{name} — {scaled_unit} ({scaled_power})"))
-                        .child(html::div().class("datapoint-bar", true).style(
-                            "transform",
-                            format!("scaleX(calc(min({size}/var(--size), 1)))"),
-                        ))
-                })
-                .collect_view(),
-        ),
+        html::div()
+            .class("histogram", true)
+            .child(move || {
+                elements
+                    .get()
+                    .into_iter()
+                    .map(|(datapoint, _)| datapoint.to_leptos_element())
+                    .collect_view()
+            })
+            .on_mount(move |_| {
+                data.with(move |data| {
+                    elements.with(|elements| {
+                        adjust_size(data, elements);
+                    });
+                });
+            }),
         html::div().style("height", "100vh"),
     ]
 }
@@ -158,31 +180,58 @@ fn raw_data(data: RwSignal<Data>) -> impl IntoView {
         )
 }
 
-fn adjust_size(Data { datapoints, .. }: &Data) {
-    let elements = document().query_selector_all(".datapoint").unwrap();
+fn adjust_size(data: &Data, elements: &[(HtmlDivElement, HtmlDivElement)]) {
+    let scale = get_scale(data, elements);
+    let overflow = "scaleX(1)";
+    let underflow = "scaleX(0)";
 
-    for i in 0.. {
-        let Some(element) = elements.item(i) else {
-            return;
+    for (datapoint, (_, bar)) in data.datapoints.iter().zip(elements.to_vec()) {
+        if datapoint.size > scale {
+            bar.style().set_property("transform", overflow).unwrap();
+        } else if datapoint.size < (scale / 10_000.) {
+            bar.style().set_property("transform", underflow).unwrap()
+        } else {
+            bar.style()
+                .set_property(
+                    "transform",
+                    &format!("scaleX({:.3})", datapoint.size / scale),
+                )
+                .unwrap();
         };
-        let element: web_sys::HtmlElement = element.dyn_into().unwrap();
-        let rect = element.get_bounding_client_rect();
-        let i: usize = i.try_into().unwrap();
+    }
+}
+fn get_scale(Data { datapoints, .. }: &Data, elements: &[(HtmlDivElement, HtmlDivElement)]) -> f64 {
+    let (reference, visibility) = reference(elements);
+    let size = match datapoints.get(reference) {
+        Some(reference) => reference.size,
+        None => {
+            assert_eq!(0, datapoints.len());
+            1e30
+        }
+    };
+    let size_next = match datapoints.get(reference + 1) {
+        Some(reference) => reference.size,
+        None => 0.,
+    };
+    scale_1(visibility, size, size_next)
+}
+/// Returns the reference element, and how much we should scale into that element.
+fn reference(elements: &[(HtmlDivElement, HtmlDivElement)]) -> (usize, f64) {
+    let view = ViewportSize::from_global();
 
-        let height = rect.height();
-        let top = rect.top();
-
-        if i == 0 && top > 0. {
-            set_css_variable("--size", &datapoints[0].size.to_string());
-        } else if -height < top && top < 0. {
-            let visible_fraction = (height + top) / height;
-            let size = datapoints[i].size;
-            let size_next = datapoints.get(i + 1).map(|d| d.size).unwrap_or(0.);
-            let global = scale_1(visible_fraction, size, size_next);
-            set_css_variable("--size", &global.to_string());
-            return;
+    for (i, (datapoint, _)) in elements.iter().enumerate() {
+        let rect = datapoint.get_bounding_client_rect();
+        match Visibility::vertical_from_rect(&rect, &view) {
+            Visibility::Before => {}
+            Visibility::PeekingBefore(fraction) => return (i, fraction),
+            Visibility::Inside => return (i, 1.),
+            Visibility::PeekingAfter(fraction) => return (i, fraction),
+            Visibility::After => return (i, 0.),
+            Visibility::Straddling(fraction) => return (i, fraction),
         }
     }
+
+    (elements.len().saturating_sub(1), 0.)
 }
 
 /// Scales the size linearly such that:
@@ -222,6 +271,7 @@ fn interpolate(from: f64, to: f64, progress: f64) -> f64 {
     to + (from - to) * progress
 }
 
+#[allow(dead_code)]
 fn set_css_variable(name: &str, value: &str) {
     let element: web_sys::HtmlElement = document().document_element().unwrap().dyn_into().unwrap();
     element.style().set_property(name, value).unwrap();
