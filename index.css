@@ -34,7 +34,7 @@ body {
                 height: 1em;
                 background-color: darkgray;
 
-                transition: transform 10ms linear 0s;
+                transition: transform 50ms linear 0s;
                 transform-origin: left center;
             }
         }
