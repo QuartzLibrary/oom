@@ -89,7 +89,9 @@ fn histogram(data: Signal<Data>) -> impl IntoView {
                 let scaled_unit = human::round_with_scaled_unit(size, &data.unit);
                 let scaled_power = human::round_with_power(size, &data.unit);
 
-                let bar = html::div().class("datapoint-bar", true);
+                let bar = html::div()
+                    .class("datapoint-bar", true)
+                    .style("transform", "scaleX(0)");
                 let datapoint = html::div()
                     .class("datapoint", true)
                     .child(format!("{name} — {scaled_unit} ({scaled_power})"))
