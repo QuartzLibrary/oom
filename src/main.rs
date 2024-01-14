@@ -10,6 +10,7 @@ use web_sys::wasm_bindgen::JsCast;
 use web_sys::Node;
 
 mod human;
+pub mod visibility;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct Data {
