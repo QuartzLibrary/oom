@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::rc::Rc;
 use web_sys::wasm_bindgen::JsCast;
+use web_sys::Node;
 
 mod human;
 
@@ -223,6 +224,14 @@ fn interpolate(from: f64, to: f64, progress: f64) -> f64 {
 fn set_css_variable(name: &str, value: &str) {
     let element: web_sys::HtmlElement = document().document_element().unwrap().dyn_into().unwrap();
     element.style().set_property(name, value).unwrap();
+}
+
+#[allow(dead_code)]
+fn select(selector: &str) -> impl Iterator<Item = Node> {
+    let elements = document().query_selector_all(selector).unwrap();
+    // Returned [NodeList] is static.
+    // https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll#return_value
+    (0..elements.length()).map(move |i| elements.item(i).expect("static (non-live) `NodeList`"))
 }
 
 impl Data {
