@@ -196,7 +196,7 @@ fn adjust_size(data: &Data, elements: &[(HtmlDivElement, HtmlDivElement)]) {
             bar.style()
                 .set_property(
                     "transform",
-                    &format!("scaleX({:.3})", datapoint.size / scale),
+                    &format!("scaleX({:.4})", datapoint.size / scale),
                 )
                 .unwrap();
         };

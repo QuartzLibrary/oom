@@ -2,36 +2,125 @@
     "unit": "m",
     "datapoints": [
         {
-            "name": "Neptune",
-            "size": 4498396441000.0
+            "name": "Mercury (distance from the Sun)",
+            "size": 6.67806e10,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
         },
         {
-            "name": "Uranus",
-            "size": 2870658186000.0
+            "name": "Venus (distance from the Sun)",
+            "size": 1.08169e11,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
         },
         {
-            "name": "Saturn",
-            "size": 1426666422000.0
+            "name": "Earth (distance from the Sun)",
+            "size": 1.47212e11,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
         },
         {
-            "name": "Jupiter",
-            "size": 778340821000.0
+            "name": "Mars (distance from the Sun)",
+            "size": 2.17694e11,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
         },
         {
-            "name": "Mars",
-            "size": 227943824000.0
+            "name": "Jupiter (distance from the Sun)",
+            "size": 7.46332e11,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
         },
         {
-            "name": "Earth",
-            "size": 149598262000.0
+            "name": "Saturn (distance from the Sun)",
+            "size": 1.45589e12,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
         },
         {
-            "name": "Venus",
-            "size": 108209475000.0
+            "name": "Uranus (distance from the Sun)",
+            "size": 2.93364e12,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
         },
         {
-            "name": "Mercury",
-            "size": 57909227000.0
+            "name": "Neptune (distance from the Sun)",
+            "size": 4.47345e12,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+distance+from+sun"
+            ]
+        },
+        {
+            "name": "Sun (diameter)",
+            "size": 1.391e9,
+            "comment": "The Sun does not have a definite boundary, but its density decreases exponentially with increasing height above the photosphere. For the purpose of measurement, the Sun's radius is considered to be the distance from its center to the edge of the photosphere, the apparent visible surface of the Sun.",
+            "refs": [
+                "https://en.wikipedia.org/wiki/Sun",
+                "https://www.wolframalpha.com/input?i=diameter+of+the+sun"
+            ]
+        },
+        {
+            "name": "Mercury (diameter)",
+            "size": 4.88e6,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
+        },
+        {
+            "name": "Venus (diameter)",
+            "size": 1.210e7,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
+        },
+        {
+            "name": "Earth (diameter)",
+            "size": 1.2742018e7,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
+        },
+        {
+            "name": "Mars (diameter)",
+            "size": 6.779e6,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
+        },
+        {
+            "name": "Jupiter (diameter)",
+            "size": 1.399e8,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
+        },
+        {
+            "name": "Saturn (diameter)",
+            "size": 1.166e8,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
+        },
+        {
+            "name": "Uranus (diameter)",
+            "size": 5.07e7,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
+        },
+        {
+            "name": "Neptune (diameter)",
+            "size": 4.92e7,
+            "refs": [
+                "https://www.wolframalpha.com/input?i=planet+diameter"
+            ]
         },
         {
             "name": "Human red blood cell (diameter)",
